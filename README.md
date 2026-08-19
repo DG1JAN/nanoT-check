@@ -19,11 +19,13 @@ Install python modules:
 - pyserial
 - pqt5
 
+here you can find a Linux binary (packed with Pyinstaller) to run standalone:<br>
+https://drive.google.com/file/d/1QBF0nJBF1aOZa7WCuNiOfnFE-GSKSI1P/view?usp=sharing
 
 ## Run
 Performe SOLT Calibration (for a selected frequency range) on your NanoVNA
 - Connect your NanoVNA to the PC via USB
-- Start tcheck_qt.py (e.g. #python3 tcheck_qt.py)
+- Start tcheck_qt.py (e.g. #python3 tcheck_qt.py) / or run linux binary (./naoT-check)
 - Enter Serial Port or (better) run auto detection by clicking
 - connect a T-Junction with a 50 Ohm Calibration resistor to PORT1 and PORT2 of your NanoVNA
 - Run the T-Check
