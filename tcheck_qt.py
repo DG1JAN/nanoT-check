@@ -683,15 +683,15 @@ class TCheckWindow(QMainWindow):
         layout.addWidget(self._canvas)
 
     def _style_axes(self):
-        # plot text scaled up from the form label font size
+        # match the plot text to the form label font size
         fs = self._lbl_port.font().pointSize()
         if fs <= 0:
             fs = 9
         ax = self._ax
         ax.set_facecolor(PLOT_BG)
-        ax.set_xlabel(self._tr("axis_freq"), color=FG, fontsize=fs + 6)
-        ax.set_ylabel(self._tr("axis_ct"),   color=FG, fontsize=fs + 6)
-        ax.tick_params(colors=FG, which="both", labelsize=fs + 4)
+        ax.set_xlabel(self._tr("axis_freq"), color=FG, fontsize=fs)
+        ax.set_ylabel(self._tr("axis_ct"),   color=FG, fontsize=fs)
+        ax.tick_params(colors=FG, which="both", labelsize=fs)
         for spine in ax.spines.values():
             spine.set_edgecolor(FG_DIM)
 
