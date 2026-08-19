@@ -36,6 +36,8 @@ The datasource can be changed to a build-in example set, for testing/debugging r
 Standard language is English, but can also be changed to German
 With the option "S output on console" the script will output Frequency, S11, S21 and calculated cT on the console (stdout) on every measurement for debug reason.
 
+Example of a connected Tee-Junction with 50Ohm (two 100 Ohm Resistors in parallel on the PCB):
+![pic of NanoVNA with Tee-Junction](pic1.jpg)
 
 
 
