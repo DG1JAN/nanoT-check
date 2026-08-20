@@ -3,7 +3,6 @@ NanoVNA Accuracy Tester using the T-Check Method
 
 ***!!! This Project is heavily Vibe Coded using GitHub Copilot with Claude Sonnet 4.6 !!!***
 
-
 The nanoT-check Tool can be used to perform a accuracy test of a calibrated (SOLT) NanoVNA according the Method described by Rhode & Schwarz in their Application Note 1EZ43_0E : "T-Check Accuracy Test for Vector Network Analyzers utilizing a Tee-junction"
 (see  https://www.rohde-schwarz.com/us/applications/t-check-accuracy-test-for-vector-network-analyzers-utilizing-a-tee-junction_56280-15519.html )
 
