@@ -21,7 +21,7 @@ Install python modules:
 
 ## Download Binaries 
 ***Here you can find a Linux and Windows binary (packed with Pyinstaller) to run standalone:<br>***
-https://drive.google.com/drive/folders/1SLAz2ZAeqQ1EM-Uap_ZfNKL-KDnQLyNi?usp=sharing
+[Link to Google Drive](https://drive.google.com/drive/folders/1SLAz2ZAeqQ1EM-Uap_ZfNKL-KDnQLyNi?usp=sharing)
 
 ## Run
 Performe SOLT Calibration (for a selected frequency range) on your NanoVNA
