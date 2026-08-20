@@ -71,11 +71,15 @@ def _require_serial():
 
 def _find_nanovna_port(list_ports):
     """Auto-detect a NanoVNA among the available serial ports."""
+    nanovna_usb_ids = {(0x0483, 0x5740)}  # STM32 USB CDC used by NanoVNA
     candidates = []
     for port in list_ports.comports():
         desc = (port.description or "").lower()
         mfg  = (port.manufacturer or "").lower()
-        if any(k in desc or k in mfg for k in ("nanovna", "cdc", "stm32", "hugen")):
+        usb_id_match = (port.vid, port.pid) in nanovna_usb_ids
+        text_match = any(k in desc or k in mfg
+                         for k in ("nanovna", "cdc", "stm32", "hugen"))
+        if usb_id_match or text_match:
             candidates.append(port.device)
     return candidates[0] if candidates else None
 
@@ -84,12 +88,14 @@ def _send_cmd(ser, cmd: str, timeout: float = 2.0) -> list:
     """Send a command and collect response lines until the 'ch>' prompt."""
     ser.reset_input_buffer()
     ser.write((cmd + "\r\n").encode())
+    ser.flush()
 
     lines = []
     deadline = time.monotonic() + timeout
     buf = ""
     while time.monotonic() < deadline:
-        chunk = ser.read(ser.in_waiting or 1).decode(errors="replace")
+        waiting = ser.in_waiting
+        chunk = ser.read(waiting or 1).decode(errors="replace")
         buf += chunk
         while "\n" in buf:
             line, buf = buf.split("\n", 1)
@@ -97,8 +103,11 @@ def _send_cmd(ser, cmd: str, timeout: float = 2.0) -> list:
             if line and line != cmd.strip():   # skip command echo
                 lines.append(line)
         if "ch>" in buf:
-            break
-    return lines
+            return lines
+    raise TimeoutError(f"NanoVNA did not return the 'ch>' prompt for {cmd!r}")
+
+
+NANOVNA_COMMAND_DELAY = 1.0
 
 
 def _parse_complex_lines(lines: list) -> list:
@@ -348,28 +357,33 @@ class AcquireWorker(QThread):
         self.status.emit(self._tr("st_connecting", port), FG_DIM)
 
         try:
-            ser = serial.Serial(port, baudrate=115200, timeout=1)
+            ser = serial.Serial(port, baudrate=115200, timeout=0.1,
+                                write_timeout=2)
         except serial.SerialException as exc:
             raise RuntimeError(f"Cannot open {port}: {exc}") from exc
 
-        time.sleep(0.3)
-        freq_lines = _send_cmd(ser, "frequencies", timeout=5.0)
-        repeats = self._repeats
-        repeat_values = []
-        for repeat in range(repeats):
-            if self._average:
-                self.status.emit(self._tr("st_average", repeat + 1, repeats),
-                                 FG_DIM)
-            else:
-                self.status.emit(self._tr("st_s11"), FG_DIM)
-            s11_lines = _send_cmd(ser, "data 0", timeout=5.0)
-            self.status.emit(self._tr("st_s21"), FG_DIM)
-            s21_lines = _send_cmd(ser, "data 1", timeout=5.0)
-            repeat_values.append((_parse_complex_lines(s11_lines),
-                                  _parse_complex_lines(s21_lines)))
-            if repeat + 1 < repeats:
-                time.sleep(3.0)
-        ser.close()
+        try:
+            time.sleep(0.5)
+            freq_lines = _send_cmd(ser, "frequencies", timeout=5.0)
+            time.sleep(NANOVNA_COMMAND_DELAY)
+            repeats = self._repeats
+            repeat_values = []
+            for repeat in range(repeats):
+                if self._average:
+                    self.status.emit(self._tr("st_average", repeat + 1, repeats),
+                                     FG_DIM)
+                else:
+                    self.status.emit(self._tr("st_s11"), FG_DIM)
+                s11_lines = _send_cmd(ser, "data 0", timeout=5.0)
+                time.sleep(NANOVNA_COMMAND_DELAY)
+                self.status.emit(self._tr("st_s21"), FG_DIM)
+                s21_lines = _send_cmd(ser, "data 1", timeout=5.0)
+                repeat_values.append((_parse_complex_lines(s11_lines),
+                                      _parse_complex_lines(s21_lines)))
+                if repeat + 1 < repeats:
+                    time.sleep(3.0)
+        finally:
+            ser.close()
 
         freqs = []
         for line in freq_lines:
